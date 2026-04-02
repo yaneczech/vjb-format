@@ -231,6 +231,10 @@ The source of truth for playback timing is:
 - `media.primaryVideo.fps`
 - marker `frame`
 
+For `v1`, all playback timing references in markers and transport behavior are
+defined in the baked frame space of `media.primaryVideo`, not in the frame or
+time space of `source`.
+
 Recommended supported media targets for `v1`:
 
 - `mov + hap_q`
@@ -269,6 +273,12 @@ Markers define playback entry points and segment state.
 
 For `v1`, marker `frame` is an integer zero-based frame index into
 `media.primaryVideo`.
+
+Normative frame-space rule:
+
+- `markers[].frame` must reference the zero-based frame index in the baked
+  primary playback media described by `media.primaryVideo`, not the original
+  source media
 
 Required marker fields:
 
@@ -316,6 +326,31 @@ Rules:
 - if `segmentEndMarkerId` is present, it must resolve to an existing marker
 - `segmentEndMarkerId` must not reference the same marker
 - the resolved segment end marker must have `frame >=` the start marker frame
+
+Authoring note:
+
+- authoring tools may internally store markers in source frame space or source
+  time space
+- when exporting VJB, authoring tools must convert marker positions into the
+  baked frame space of `media.primaryVideo`
+- this export conversion should happen before writing `markers[].frame`
+
+Example baked-frame conversion:
+
+- source clip at `30.0 fps`, baked export at `120.0 fps`: source frame `300`
+  maps to baked frame `1200`
+- source clip at `30.0 fps`, baked export at `240.0 fps`: source frame `300`
+  maps to baked frame `2400`
+- equivalent time-based conversion is `bakedFrame = sourceTimeSeconds *
+  media.primaryVideo.fps`
+
+Rounding guidance for authoring tools:
+
+- if conversion starts from fractional source time, tools should use one stable
+  rounding strategy consistently for the whole export
+- nearest-frame rounding is recommended for `v1`
+- exported manifests should not mix rounding strategies across markers within
+  the same bundle
 
 ## 11. Playback Semantics
 
