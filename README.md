@@ -4,7 +4,7 @@
   <img
     src="./img/format-logo.png"
     alt="VJB format logo"
-    width="720"
+    width="250"
   >
 </p>
 
