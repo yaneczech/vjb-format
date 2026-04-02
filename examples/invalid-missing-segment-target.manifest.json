@@ -1,0 +1,43 @@
+{
+  "schema": "com.vjb.bundle",
+  "schemaVersion": "1.0.0",
+  "bundleId": "example-invalid-missing-target",
+  "title": "Invalid Segment Target Example",
+  "source": {
+    "fileName": "source.mp4",
+    "durationMs": 3000,
+    "width": 1920,
+    "height": 1080,
+    "fpsNominal": 30.0,
+    "frameCount": 90
+  },
+  "bake": {
+    "targetFps": 120.0
+  },
+  "media": {
+    "primaryVideo": {
+      "path": "media/master.mov",
+      "container": "mov",
+      "codec": "prores_422",
+      "width": 1920,
+      "height": 1080,
+      "fps": 120.0,
+      "frameCount": 360,
+      "durationMs": 3000
+    }
+  },
+  "transport": {
+    "defaultMode": "once",
+    "defaultDirection": 1.0,
+    "defaultSpeed": 1.0,
+    "seekMode": "frame-accurate"
+  },
+  "markers": [
+    {
+      "id": "m_intro",
+      "index": 1,
+      "frame": 0,
+      "segmentEndMarkerId": "m_missing"
+    }
+  ]
+}

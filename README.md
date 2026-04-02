@@ -60,6 +60,33 @@ The current focus is deliberately narrow:
 - [`spec/SPEC.md`](./spec/SPEC.md): current specification draft
 - [`spec/PRINCIPLES.md`](./spec/PRINCIPLES.md): design principles for the format
 - [`schema/manifest.schema.json`](./schema/manifest.schema.json): draft JSON Schema for `manifest.json`
+- [`examples/`](./examples/): implementation-oriented manifest examples for valid,
+  warning, and invalid cases
+
+## Implementing V1
+
+Recommended reader flow:
+
+1. Open the `.vjb` file as a ZIP archive.
+2. Read and parse `manifest.json`.
+3. Validate schema shape plus the spec hard rules.
+4. Resolve `media.primaryVideo.path` and confirm it stays inside the archive.
+5. Extract the primary MOV to a local cache path.
+6. Use `media.primaryVideo.frameCount` and `media.primaryVideo.fps` as the
+   authoritative playback timing source.
+7. Resolve segment bounds from marker `frame` plus `segmentEndMarkerId` or the
+   next marker in frame order.
+8. Apply playback state in this order: `transport` defaults, marker `state`,
+   then any runtime overrides from the playback app.
+
+Implementation notes:
+
+- VJB carries bundle defaults and marker entry intent, not immutable runtime
+  behavior.
+- Playback apps may override `speed`, `direction`, `mode`, `easing`, and
+  `quantizeUnit` at runtime.
+- Unknown optional fields within a supported major version should be ignored,
+  not treated as hard errors.
 
 ## Naming
 

@@ -1,0 +1,44 @@
+{
+  "schema": "com.vjb.bundle",
+  "schemaVersion": "1.0.0",
+  "bundleId": "example-warning-timeMs",
+  "title": "Warning Example",
+  "source": {
+    "fileName": "source.mp4",
+    "durationMs": 2000,
+    "width": 1280,
+    "height": 720,
+    "fpsNominal": 25.0,
+    "frameCount": 50
+  },
+  "bake": {
+    "targetFps": 100.0
+  },
+  "media": {
+    "primaryVideo": {
+      "path": "media/master.mov",
+      "container": "mov",
+      "codec": "hap_q",
+      "width": 1280,
+      "height": 720,
+      "fps": 100.0,
+      "frameCount": 200,
+      "durationMs": 2000
+    }
+  },
+  "transport": {
+    "defaultMode": "loop",
+    "defaultDirection": 1.0,
+    "defaultSpeed": 1.0,
+    "seekMode": "frame-accurate",
+    "quantizeUnit": "none"
+  },
+  "markers": [
+    {
+      "id": "m_a",
+      "index": 1,
+      "frame": 100,
+      "timeMs": 250
+    }
+  ]
+}

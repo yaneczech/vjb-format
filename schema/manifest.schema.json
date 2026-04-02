@@ -218,7 +218,7 @@
       "properties": {
         "path": {
           "type": "string",
-          "pattern": "^(?!/).+"
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.?(?:/|$))(?!.*//).+"
         },
         "container": {
           "type": "string",
@@ -281,7 +281,10 @@
         "defaultDirection": {
           "type": "number",
           "minimum": -1,
-          "maximum": 1
+          "maximum": 1,
+          "not": {
+            "const": 0
+          }
         },
         "defaultSpeed": {
           "type": "number",
@@ -294,7 +297,13 @@
           ]
         },
         "quantizeUnit": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "none",
+            "marker",
+            "beat",
+            "bar"
+          ]
         }
       }
     },
@@ -346,7 +355,10 @@
         "direction": {
           "type": "number",
           "minimum": -1,
-          "maximum": 1
+          "maximum": 1,
+          "not": {
+            "const": 0
+          }
         },
         "speed": {
           "type": "number",

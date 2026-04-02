@@ -13,7 +13,31 @@ A VJB file contains:
 The format is designed for low-latency marker-based playback workflows such as
 teleport seek, reverse traversal, looping, and segment-based live performance.
 
-## 2. Design Goals
+## 2. Conformance
+
+Interpretation of normative language in this document:
+
+- `must` and `must not` indicate hard interoperability requirements
+- `should` and `should not` indicate strong recommendations
+- `may` indicates optional behavior
+
+Conforming `v1` reader behavior:
+
+- must parse the bundle as a ZIP archive
+- must read `manifest.json` from archive root
+- must validate required fields and hard validation rules
+- must reject unsupported major schema versions
+- must ignore unknown optional fields within a supported major version
+- must use manifest timing fields as the authoritative playback timing source
+
+Conforming `v1` writer behavior:
+
+- must produce a `manifest.json` that satisfies the schema and hard validation
+  rules
+- must write `media.primaryVideo.path` as an archive-relative path
+- must not rely on private or undocumented fields for correct core playback
+
+## 3. Design Goals
 
 - Portable between authoring and playback tools
 - Deterministic marker and segment behavior
@@ -21,14 +45,14 @@ teleport seek, reverse traversal, looping, and segment-based live performance.
 - Strong forward compatibility rules
 - Good runtime ergonomics for cached playback
 
-## 3. Non-Goals
+## 4. Non-Goals
 
 - Defining a new video codec
 - Replacing editing timelines such as OTIO or AAF
 - Embedding app-specific UI state into the interchange format
 - Requiring direct playback from inside compressed archive storage
 
-## 4. Container
+## 5. Container
 
 File extension:
 
@@ -50,7 +74,7 @@ Reasoning:
 - straightforward packaging
 - practical extraction to runtime cache
 
-## 5. Directory Layout
+## 6. Directory Layout
 
 Minimum layout:
 
@@ -77,7 +101,7 @@ Reserved top-level paths:
 - `analysis/`
 - `extras/`
 
-## 6. Manifest
+## 7. Manifest
 
 The root manifest file must be named:
 
@@ -157,7 +181,31 @@ Recommended root shape:
 }
 ```
 
-## 7. Versioning
+Root manifest field guide:
+
+| Field | Required | Meaning | Used By |
+| --- | --- | --- | --- |
+| `schema` | yes | Format namespace identifier | readers, validators |
+| `schemaVersion` | yes | Format version using semver | readers, validators |
+| `bundleId` | yes | Stable bundle identifier | cataloging, caching, tooling |
+| `createdAt` | no | Bundle creation timestamp | diagnostics, tooling |
+| `title` | yes | Human-readable bundle title | UIs, asset browsers |
+| `description` | no | Freeform bundle description | UIs, tooling |
+| `source` | yes | Provenance and source media facts | tooling, diagnostics |
+| `bake` | yes | How the playback media was prepared | tooling, diagnostics |
+| `media` | yes | Playback asset references and timing | readers, validators |
+| `transport` | yes | Bundle-level default playback intent | readers, playback apps |
+| `markers` | yes | Marker entry points and segment metadata | readers, playback apps |
+| `custom` | no | Namespaced extension data | extension-aware tools |
+
+Field intent grouping:
+
+- provenance and diagnostics: `bundleId`, `createdAt`, `source`, `bake`
+- core playback semantics: `media`, `transport`, `markers`
+- UI-facing metadata: `title`, `description`
+- extensions: `custom`
+
+## 8. Versioning
 
 `schema` identifies the format namespace.
 
@@ -173,7 +221,7 @@ Reader behavior:
 - ignore unknown fields within supported major version
 - apply documented defaults to missing optional fields
 
-## 8. Media Rules
+## 9. Media Rules
 
 `v1` supports exactly one primary playback media file.
 
@@ -193,8 +241,25 @@ Primary media path:
 
 - must be relative to archive root
 - must resolve to an existing file inside the bundle
+- must not be absolute
+- must not contain `.` or `..` path segments after normalization
+- must use `/` as the path separator inside the archive
 
-## 9. Marker Model
+MOV guidance for `v1`:
+
+- primary playback media should use constant frame rate export
+- playback timing should be derived from manifest `frameCount` and `fps`, not
+  from container timestamp quirks
+- alpha-bearing exports should use a codec/profile that preserves alpha, such
+  as `prores_4444`
+- implementations should treat the MOV file as a cached local playback asset,
+  not as a stream-optimized delivery file
+- authoring tools should avoid encoder settings that change effective frame
+  count without updating manifest timing fields
+- readers may inspect container metadata for diagnostics, but manifest timing
+  remains authoritative for VJB playback
+
+## 10. Marker Model
 
 Markers define playback entry points and segment state.
 
@@ -237,17 +302,22 @@ Rules:
 - `id` must be unique within bundle
 - `index` must be unique within bundle
 - `frame` must be within media bounds
+- `frame` must be less than `media.primaryVideo.frameCount`
 - if `timeMs` is present and conflicts with `frame`, `frame` wins
+- if `segmentEndMarkerId` is present, it must resolve to an existing marker
+- `segmentEndMarkerId` must not reference the same marker
+- the resolved segment end marker must have `frame >=` the start marker frame
 
-## 10. Playback Semantics
+## 11. Playback Semantics
 
 Teleport behavior:
 
 1. select target marker
-2. optionally wait for quantization boundary
-3. seek to exact marker frame
-4. apply marker state
-5. continue playback according to segment mode
+2. resolve bundle defaults, marker state, and any active runtime overrides
+3. if the effective quantize unit is absent or `none`, continue immediately;
+   otherwise wait for the next quantization boundary
+4. seek to exact marker frame
+5. continue playback according to the effective segment mode
 
 Segment resolution:
 
@@ -255,12 +325,58 @@ Segment resolution:
 - otherwise use the next marker in frame order
 - if no later marker exists, segment end defaults to end of media
 
+Normative `v1` segment rules:
+
+- segment start is the target marker frame
+- segment end is inclusive when it resolves to another marker frame
+- segment end is `media.primaryVideo.frameCount - 1` when it defaults to end of
+  media
+- a resolved segment must satisfy `segmentEndFrame >= segmentStartFrame`
+- a single-frame segment where `segmentEndFrame == segmentStartFrame` is valid
+
+`transport.quantizeUnit` values for `v1`:
+
+- `none`
+- `marker`
+- `beat`
+- `bar`
+
 Recommended `mode` values:
 
 - `once`
 - `loop`
 - `pingpong`
 - `hold`
+
+Normative `v1` mode behavior:
+
+- `once`: advance in the current direction until the segment end is reached,
+  then stop on the boundary frame
+- `loop`: on reaching a segment boundary, jump to the opposite segment boundary
+  and continue without changing direction
+- `pingpong`: on reaching a segment boundary, remain on the boundary frame for
+  that tick, then invert direction
+- `hold`: seek to the segment start frame and remain there until an external
+  transport action changes playback state
+
+State resolution:
+
+- `transport` defines bundle-level default playback state
+- marker `state` defines bundle-provided entry state for that marker
+- omitted marker `state` fields inherit from `transport`
+- playback applications may apply runtime overrides after marker resolution
+- runtime overrides take precedence over both `transport` and marker `state`
+- runtime overrides may replace `speed`, `direction`, `mode`, `easing`, and
+  `quantizeUnit`
+- `direction` of `0` is invalid for `v1`; direction must be either negative or
+  positive
+
+Boundary behavior:
+
+- for forward playback, the upper segment bound is the active stop boundary
+- for reverse playback, the lower segment bound is the active stop boundary
+- conforming readers must not read past either boundary before applying the
+  selected mode behavior
 
 Recommended `easing` values for `v1`:
 
@@ -273,7 +389,7 @@ Recommended `easing` values for `v1`:
 - `cubic-in-out`
 - `bounce-out`
 
-## 11. Progress Semantics
+## 12. Progress Semantics
 
 Playback consumers should expose segment progress as:
 
@@ -283,10 +399,20 @@ Recommended interpretation for `v1`:
 
 - normalized position between the lower and upper segment frame bounds
 - independent of playback direction
+- computed from inclusive segment bounds
 
 This keeps modulation behavior stable when direction changes.
 
-## 12. Runtime Cache Guidance
+Normative `v1` progress rules:
+
+- if `segmentStartFrame == segmentEndFrame`, progress is always `1.0`
+- otherwise progress is `(currentFrame - segmentStartFrame) / (segmentEndFrame -
+  segmentStartFrame)`
+- readers must clamp the exposed value to the closed interval `0.0` to `1.0`
+- reverse playback does not invert progress; only frame position within the
+  segment matters
+
+## 13. Runtime Cache Guidance
 
 VJB is a transport container, not a required direct-playback container.
 
@@ -303,7 +429,7 @@ Benefits:
 - simpler decoder integration
 - no dependency on archive-aware media playback
 
-## 13. Validation
+## 14. Validation
 
 Minimum validation rules:
 
@@ -312,10 +438,22 @@ Minimum validation rules:
 - `schemaVersion` is parseable
 - `bundleId` is present
 - `media.primaryVideo.path` exists
+- `media.primaryVideo.path` does not escape the archive root when normalized
 - `bake.targetFps > 0`
+- `transport.defaultDirection` is not `0`
 - all marker ids are unique
 - all marker indices are unique
 - all marker frames are in range
+- every `segmentEndMarkerId`, if present, resolves to an existing marker
+- no `segmentEndMarkerId` points to the same marker
+- no resolved segment end frame is earlier than its start frame
+
+Minimum validator behavior:
+
+- violations of the minimum validation rules are hard errors
+- unknown fields within a supported major version must not be hard errors
+- unsupported optional features may produce warnings, but must not invalidate
+  otherwise playable bundles
 
 Soft warnings:
 
@@ -324,7 +462,7 @@ Soft warnings:
 - `timeMs` inconsistent with `frame`
 - optional analysis files missing
 
-## 14. Extensions
+## 15. Extensions
 
 Implementations may add extra data under:
 
@@ -342,7 +480,7 @@ Extension rules:
 - must be safe to ignore for core playback
 - should use namespaced keys
 
-## 15. Open Format Expectations
+## 16. Open Format Expectations
 
 VJB should be treated as:
 

@@ -1,0 +1,43 @@
+{
+  "schema": "com.vjb.bundle",
+  "schemaVersion": "1.0.0",
+  "bundleId": "example-valid-minimal",
+  "title": "Minimal Example",
+  "source": {
+    "fileName": "source.mp4",
+    "durationMs": 1000,
+    "width": 1920,
+    "height": 1080,
+    "fpsNominal": 30.0,
+    "frameCount": 30
+  },
+  "bake": {
+    "targetFps": 120.0
+  },
+  "media": {
+    "primaryVideo": {
+      "path": "media/master.mov",
+      "container": "mov",
+      "codec": "hap_q",
+      "width": 1920,
+      "height": 1080,
+      "fps": 120.0,
+      "frameCount": 120,
+      "durationMs": 1000
+    }
+  },
+  "transport": {
+    "defaultMode": "loop",
+    "defaultDirection": 1.0,
+    "defaultSpeed": 1.0,
+    "seekMode": "frame-accurate",
+    "quantizeUnit": "none"
+  },
+  "markers": [
+    {
+      "id": "m_start",
+      "index": 1,
+      "frame": 0
+    }
+  ]
+}

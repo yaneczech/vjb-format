@@ -1,0 +1,65 @@
+{
+  "schema": "com.vjb.bundle",
+  "schemaVersion": "1.0.0",
+  "bundleId": "example-valid-segmented",
+  "title": "Segmented Example",
+  "source": {
+    "fileName": "club_loop.mp4",
+    "durationMs": 4000,
+    "width": 1920,
+    "height": 1080,
+    "fpsNominal": 30.0,
+    "frameCount": 120
+  },
+  "bake": {
+    "targetFps": 120.0,
+    "interpolationFactor": 4.0
+  },
+  "media": {
+    "primaryVideo": {
+      "path": "media/master.mov",
+      "container": "mov",
+      "codec": "prores_422",
+      "width": 1920,
+      "height": 1080,
+      "fps": 120.0,
+      "frameCount": 480,
+      "durationMs": 4000
+    }
+  },
+  "transport": {
+    "defaultMode": "once",
+    "defaultDirection": 1.0,
+    "defaultSpeed": 1.0,
+    "seekMode": "frame-accurate",
+    "quantizeUnit": "marker"
+  },
+  "markers": [
+    {
+      "id": "m_intro",
+      "index": 1,
+      "frame": 0,
+      "state": {
+        "mode": "loop",
+        "speed": 1.0
+      }
+    },
+    {
+      "id": "m_hit",
+      "index": 2,
+      "frame": 120,
+      "segmentEndMarkerId": "m_tail",
+      "state": {
+        "mode": "pingpong",
+        "direction": -1.0,
+        "speed": 0.5,
+        "easing": "cubic-out"
+      }
+    },
+    {
+      "id": "m_tail",
+      "index": 3,
+      "frame": 239
+    }
+  ]
+}
