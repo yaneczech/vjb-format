@@ -1,5 +1,13 @@
 # VJB Format
 
+<p align="center">
+  <img
+    src="./img/format-logo.png"
+    alt="VJB format logo"
+    width="720"
+  >
+</p>
+
 VJB (`.vjb`) is an open bundle format for temporal media prepared for live
 playback.
 
