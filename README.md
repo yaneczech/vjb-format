@@ -87,17 +87,10 @@ Implementation notes:
   behavior.
 - Playback apps may override `speed`, `direction`, `mode`, `easing`, and
   `quantizeUnit` at runtime.
+- `media.primaryVideo.alpha` is the authoritative playback alpha flag for
+  renderer setup; `source.hasAlpha` is descriptive source metadata.
 - Unknown optional fields within a supported major version should be ignored,
   not treated as hard errors.
-
-## Naming
-
-- Product/app example: `Vijual Bake Studio`
-- Feature/workflow example: `Temporal Sampler`
-- File format: `VJB` / `.vjb`
-
-`VJB` is treated here as the format name. The specification is intended to be
-usable by multiple tools and not tied to any single vendor runtime.
 
 ## Scope
 
@@ -112,6 +105,9 @@ VJB is not:
 - a new video codec
 - a generic editing timeline format
 - a vendor-locked project file
+
+`VJB` is the format name. The specification is intended for use by multiple
+authoring and playback tools and is not tied to any single vendor runtime.
 
 ## License
 

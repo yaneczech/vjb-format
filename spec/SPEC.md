@@ -193,7 +193,7 @@ Root manifest field guide:
 | `description` | no | Freeform bundle description | UIs, tooling |
 | `source` | yes | Provenance and source media facts | tooling, diagnostics |
 | `bake` | yes | How the playback media was prepared | tooling, diagnostics |
-| `media` | yes | Playback asset references and timing | readers, validators |
+| `media` | yes | Playback asset references, timing, and playback asset flags | readers, validators |
 | `transport` | yes | Bundle-level default playback intent | readers, playback apps |
 | `markers` | yes | Marker entry points and segment metadata | readers, playback apps |
 | `custom` | no | Namespaced extension data | extension-aware tools |
@@ -250,6 +250,10 @@ MOV guidance for `v1`:
 - primary playback media should use constant frame rate export
 - playback timing should be derived from manifest `frameCount` and `fps`, not
   from container timestamp quirks
+- `media.primaryVideo.alpha` should be treated as the authoritative playback
+  alpha flag for renderer setup
+- `source.hasAlpha` is descriptive source metadata only and should not override
+  `media.primaryVideo.alpha` for playback decisions
 - alpha-bearing exports should use a codec/profile that preserves alpha, such
   as `prores_4444`
 - implementations should treat the MOV file as a cached local playback asset,
@@ -262,6 +266,9 @@ MOV guidance for `v1`:
 ## 10. Marker Model
 
 Markers define playback entry points and segment state.
+
+For `v1`, marker `frame` is an integer zero-based frame index into
+`media.primaryVideo`.
 
 Required marker fields:
 
@@ -303,7 +310,9 @@ Rules:
 - `index` must be unique within bundle
 - `frame` must be within media bounds
 - `frame` must be less than `media.primaryVideo.frameCount`
+- `frame` is authoritative for playback and transport math
 - if `timeMs` is present and conflicts with `frame`, `frame` wins
+- `timeMs` is advisory metadata for tooling and UI display
 - if `segmentEndMarkerId` is present, it must resolve to an existing marker
 - `segmentEndMarkerId` must not reference the same marker
 - the resolved segment end marker must have `frame >=` the start marker frame
@@ -362,8 +371,10 @@ Normative `v1` mode behavior:
 State resolution:
 
 - `transport` defines bundle-level default playback state
-- marker `state` defines bundle-provided entry state for that marker
+- marker `state` defines the bundle-provided entry behavior for that marker
 - omitted marker `state` fields inherit from `transport`
+- upon teleport or trigger to a marker, readers should adopt the marker's
+  effective entry behavior unless explicitly overridden by the live controller
 - playback applications may apply runtime overrides after marker resolution
 - runtime overrides take precedence over both `transport` and marker `state`
 - runtime overrides may replace `speed`, `direction`, `mode`, `easing`, and
