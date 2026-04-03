@@ -331,6 +331,18 @@
           "type": "string",
           "pattern": "^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$"
         },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "cue",
+              "quantize"
+            ]
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
         "frame": {
           "type": "integer",
           "minimum": 0

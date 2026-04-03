@@ -1,15 +1,15 @@
 {
   "schema": "com.vjb.bundle",
   "schemaVersion": "1.0.0",
-  "bundleId": "example-valid-segmented",
-  "title": "Segmented Example",
+  "bundleId": "example-valid-marker-roles",
+  "title": "Marker Roles Example",
   "source": {
     "fileName": "club_loop.mp4",
-    "durationMs": 4000,
+    "durationMs": 8000,
     "width": 1920,
     "height": 1080,
     "fpsNominal": 30.0,
-    "frameCount": 120
+    "frameCount": 240
   },
   "bake": {
     "targetFps": 120.0,
@@ -19,12 +19,12 @@
     "primaryVideo": {
       "path": "media/master.mov",
       "container": "mov",
-      "codec": "prores_422",
+      "codec": "hap_q",
       "width": 1920,
       "height": 1080,
       "fps": 120.0,
-      "frameCount": 480,
-      "durationMs": 4000
+      "frameCount": 960,
+      "durationMs": 8000
     }
   },
   "transport": {
@@ -32,42 +32,43 @@
     "defaultDirection": 1.0,
     "defaultSpeed": 1.0,
     "seekMode": "frame-accurate",
-    "quantizeUnit": "marker"
+    "quantizeUnit": "bar"
   },
   "markers": [
     {
-      "id": "m_intro",
+      "id": "m_drop",
       "index": 1,
-      "frame": 0,
+      "frame": 240,
       "roles": ["cue"],
+      "segmentEndMarkerId": "m_outro",
       "state": {
         "mode": "loop",
+        "direction": 1.0,
         "speed": 1.0
       }
     },
     {
-      "id": "q_bar_2",
+      "id": "q_bar_17",
       "index": 2,
-      "frame": 120,
+      "frame": 252,
       "roles": ["quantize"]
     },
     {
       "id": "m_hit",
       "index": 3,
-      "frame": 180,
+      "frame": 264,
       "roles": ["cue", "quantize"],
-      "segmentEndMarkerId": "m_tail",
       "state": {
-        "mode": "pingpong",
-        "direction": -1.0,
-        "speed": 0.5,
-        "easing": "cubic-out"
+        "mode": "once",
+        "direction": 1.0,
+        "speed": 1.0
       }
     },
     {
-      "id": "m_tail",
+      "id": "m_outro",
       "index": 4,
-      "frame": 239
+      "frame": 360,
+      "roles": ["cue"]
     }
   ]
 }

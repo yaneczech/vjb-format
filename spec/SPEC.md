@@ -290,6 +290,7 @@ Optional marker fields:
 
 - `label`
 - `color`
+- `roles`
 - `timeMs`
 - `segmentEndMarkerId`
 - `state`
@@ -303,6 +304,7 @@ Recommended marker shape:
   "label": "Hit",
   "color": "#FCA5A5",
   "frame": 1240,
+  "roles": ["cue"],
   "timeMs": 5167,
   "segmentEndMarkerId": "m_tail",
   "state": {
@@ -314,6 +316,26 @@ Recommended marker shape:
 }
 ```
 
+Marker roles:
+
+Markers may optionally declare semantic roles via `roles`.
+
+Supported roles in `v1`:
+
+- `cue`: a playback entry marker that may define segment behavior
+- `quantize`: a timing reference marker for snapping, sync, or quantized jumps
+
+If `roles` is omitted, readers must treat the marker as if it were:
+
+```json
+{
+  "roles": ["cue"]
+}
+```
+
+This preserves backward compatibility with manifests created before marker
+roles were introduced.
+
 Rules:
 
 - `id` must be unique within bundle
@@ -324,8 +346,24 @@ Rules:
 - if `timeMs` is present and conflicts with `frame`, `frame` wins
 - `timeMs` is advisory metadata for tooling and UI display
 - if `segmentEndMarkerId` is present, it must resolve to an existing marker
+- if `segmentEndMarkerId` is present, it must reference a marker that includes
+  the `cue` role
 - `segmentEndMarkerId` must not reference the same marker
 - the resolved segment end marker must have `frame >=` the start marker frame
+- unknown marker roles within a supported major version should be ignored unless
+  explicitly supported by the implementation
+
+Playback role semantics:
+
+- only markers that include the `cue` role participate in implicit playback
+  segment resolution
+- markers with the `quantize` role may be used as timing references for
+  snapping, sync, or quantized jumps
+- markers with the `quantize` role do not implicitly start playback segments
+- markers with the `quantize` role do not implicitly terminate playback
+  segments
+- `state` and `segmentEndMarkerId` are only meaningful for markers that include
+  the `cue` role
 
 Authoring note:
 
@@ -366,7 +404,7 @@ Teleport behavior:
 Segment resolution:
 
 - if `segmentEndMarkerId` exists, use that marker as segment end
-- otherwise use the next marker in frame order
+- otherwise use the next marker with the `cue` role in frame order
 - if no later marker exists, segment end defaults to end of media
 
 Normative `v1` segment rules:

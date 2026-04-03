@@ -7,6 +7,8 @@ Suggested use:
 - `valid-minimal.manifest.json`: smallest useful playable shape
 - `valid-segmented.manifest.json`: markers with segment resolution and transport
   defaults
+- `valid-marker-roles.manifest.json`: explicit `cue` and `quantize` marker role
+  combinations
 - `warning-timeMs-mismatch.manifest.json`: valid manifest that should produce a
   warning because `timeMs` does not match the authoritative frame timing
 - `invalid-bad-path.manifest.json`: invalid because the media path escapes the
