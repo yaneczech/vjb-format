@@ -251,7 +251,9 @@ Primary media path:
 
 MOV guidance for `v1`:
 
-- primary playback media should use constant frame rate export
+- primary playback media for `v1` should use constant frame rate export
+- deterministic playback behavior depends on a stable baked frame space with a
+  single effective frame rate
 - playback timing should be derived from manifest `frameCount` and `fps`, not
   from container timestamp quirks
 - `media.primaryVideo.alpha` should be treated as the authoritative playback
@@ -291,6 +293,7 @@ Optional marker fields:
 - `label`
 - `color`
 - `roles`
+- `quantize`
 - `timeMs`
 - `segmentEndMarkerId`
 - `state`
@@ -305,6 +308,11 @@ Recommended marker shape:
   "color": "#FCA5A5",
   "frame": 1240,
   "roles": ["cue"],
+  "quantize": {
+    "unit": "bar",
+    "span": 1,
+    "phase": 0.0
+  },
   "timeMs": 5167,
   "segmentEndMarkerId": "m_tail",
   "state": {
@@ -336,6 +344,35 @@ If `roles` is omitted, readers must treat the marker as if it were:
 This preserves backward compatibility with manifests created before marker
 roles were introduced.
 
+Quantize metadata:
+
+Markers that include the `quantize` role may optionally declare quantize
+metadata via `quantize`.
+
+Supported quantize fields in `v1`:
+
+- `unit`: the timing unit this marker is intended to reference
+- `span`: the number of `unit` intervals covered by the quantize reference
+- `phase`: the normalized position within that span
+
+Supported quantize units in `v1`:
+
+- `beat`
+- `bar`
+
+If `quantize.phase` is omitted, readers should treat it as `0.0`.
+
+If `quantize.span` is omitted, readers should treat it as `1`.
+
+Quantize phase is defined in the half-open interval `0.0 <= phase < 1.0`.
+
+Examples:
+
+- `{"unit": "bar", "span": 1, "phase": 0.0}`: start of a one-bar span
+- `{"unit": "bar", "span": 2, "phase": 0.5}`: midpoint of a two-bar span
+- `{"unit": "beat", "span": 4, "phase": 0.75}`: three-quarters through a
+  four-beat span
+
 Rules:
 
 - `id` must be unique within bundle
@@ -350,6 +387,8 @@ Rules:
   the `cue` role
 - `segmentEndMarkerId` must not reference the same marker
 - the resolved segment end marker must have `frame >=` the start marker frame
+- if `quantize` is present, it is only meaningful for markers that include the
+  `quantize` role
 - unknown marker roles within a supported major version should be ignored unless
   explicitly supported by the implementation
 
@@ -362,6 +401,8 @@ Playback role semantics:
 - markers with the `quantize` role do not implicitly start playback segments
 - markers with the `quantize` role do not implicitly terminate playback
   segments
+- `quantize.unit`, `quantize.span`, and `quantize.phase` define where the
+  marker sits within a quantize reference window
 - `state` and `segmentEndMarkerId` are only meaningful for markers that include
   the `cue` role
 

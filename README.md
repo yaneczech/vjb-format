@@ -77,7 +77,7 @@ Recommended reader flow:
 6. Use `media.primaryVideo.frameCount` and `media.primaryVideo.fps` as the
    authoritative playback timing source.
 7. Resolve segment bounds from marker `frame` plus `segmentEndMarkerId` or the
-   next marker in frame order.
+   next marker with the `cue` role in frame order.
 8. Apply playback state in this order: `transport` defaults, marker `state`,
    then any runtime overrides from the playback app.
 
@@ -85,6 +85,10 @@ Implementation notes:
 
 - VJB carries bundle defaults and marker entry intent, not immutable runtime
   behavior.
+- If marker `roles` is omitted, readers should treat the marker as a `cue`
+  marker for backward compatibility.
+- Markers with the `quantize` role may include `quantize.unit`,
+  `quantize.span`, and `quantize.phase` to describe quantized timing references.
 - Playback apps may override `speed`, `direction`, `mode`, `easing`, and
   `quantizeUnit` at runtime.
 - `media.primaryVideo.alpha` is the authoritative playback alpha flag for

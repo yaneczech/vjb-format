@@ -51,13 +51,23 @@
       "id": "q_bar_17",
       "index": 2,
       "frame": 252,
-      "roles": ["quantize"]
+      "roles": ["quantize"],
+      "quantize": {
+        "unit": "bar",
+        "span": 2,
+        "phase": 0.5
+      }
     },
     {
       "id": "m_hit",
       "index": 3,
       "frame": 264,
       "roles": ["cue", "quantize"],
+      "quantize": {
+        "unit": "beat",
+        "span": 4,
+        "phase": 0.75
+      },
       "state": {
         "mode": "once",
         "direction": 1.0,

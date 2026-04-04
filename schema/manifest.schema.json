@@ -343,6 +343,9 @@
           "uniqueItems": true,
           "minItems": 1
         },
+        "quantize": {
+          "$ref": "#/$defs/quantize"
+        },
         "frame": {
           "type": "integer",
           "minimum": 0
@@ -381,6 +384,28 @@
         },
         "easing": {
           "$ref": "#/$defs/easing"
+        }
+      }
+    },
+    "quantize": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "unit": {
+          "type": "string",
+          "enum": [
+            "beat",
+            "bar"
+          ]
+        },
+        "span": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "phase": {
+          "type": "number",
+          "minimum": 0,
+          "exclusiveMaximum": 1
         }
       }
     },
