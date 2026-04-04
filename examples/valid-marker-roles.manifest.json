@@ -32,7 +32,7 @@
     "defaultDirection": 1.0,
     "defaultSpeed": 1.0,
     "seekMode": "frame-accurate",
-    "quantizeUnit": "bar"
+    "quantizeUnit": "beat"
   },
   "markers": [
     {
@@ -53,9 +53,8 @@
       "frame": 252,
       "roles": ["quantize"],
       "quantize": {
-        "unit": "bar",
-        "span": 2,
-        "phase": 0.5
+        "gridIndex": 10,
+        "phase": 0.25
       }
     },
     {
@@ -64,9 +63,8 @@
       "frame": 264,
       "roles": ["cue", "quantize"],
       "quantize": {
-        "unit": "beat",
-        "span": 4,
-        "phase": 0.75
+        "gridIndex": 22,
+        "phase": 0.0
       },
       "state": {
         "mode": "once",

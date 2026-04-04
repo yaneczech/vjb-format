@@ -8,7 +8,7 @@ Suggested use:
 - `valid-segmented.manifest.json`: markers with segment resolution and transport
   defaults
 - `valid-marker-roles.manifest.json`: explicit `cue` and `quantize` marker role
-  combinations plus `quantize.unit`, `quantize.span`, and `quantize.phase`
+  combinations plus `quantize.gridIndex` and `quantize.phase`
 - `warning-timeMs-mismatch.manifest.json`: valid manifest that should produce a
   warning because `timeMs` does not match the authoritative frame timing
 - `invalid-bad-path.manifest.json`: invalid because the media path escapes the

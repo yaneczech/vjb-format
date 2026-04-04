@@ -63,6 +63,8 @@ The current focus is deliberately narrow:
 - [`spec/SPEC.md`](./spec/SPEC.md): current specification draft
 - [`spec/PRINCIPLES.md`](./spec/PRINCIPLES.md): design principles for the format
 - [`schema/manifest.schema.json`](./schema/manifest.schema.json): draft JSON Schema for `manifest.json`
+- [`CHANGELOG.md`](./CHANGELOG.md): format-facing change history from the current
+  draft onward
 - [`examples/`](./examples/): implementation-oriented manifest examples for valid,
   warning, and invalid cases
 
@@ -88,8 +90,8 @@ Implementation notes:
   behavior.
 - If marker `roles` is omitted, readers should treat the marker as a `cue`
   marker for backward compatibility.
-- Markers with the `quantize` role may include `quantize.unit`,
-  `quantize.span`, and `quantize.phase` to describe quantized timing references.
+- Markers with the `quantize` role may include `quantize.gridIndex` and
+  `quantize.phase`; `transport.quantizeUnit` defines what one grid step means.
 - Playback apps may override `speed`, `direction`, `mode`, `easing`, and
   `quantizeUnit` at runtime.
 - `media.primaryVideo.alpha` is the authoritative playback alpha flag for

@@ -302,7 +302,10 @@
             "none",
             "marker",
             "beat",
-            "bar"
+            "bar",
+            "half-beat",
+            "quarter-beat",
+            "eighth-beat"
           ]
         }
       }
@@ -391,16 +394,9 @@
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "unit": {
-          "type": "string",
-          "enum": [
-            "beat",
-            "bar"
-          ]
-        },
-        "span": {
+        "gridIndex": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 0
         },
         "phase": {
           "type": "number",

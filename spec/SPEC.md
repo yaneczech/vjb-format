@@ -309,9 +309,8 @@ Recommended marker shape:
   "frame": 1240,
   "roles": ["cue"],
   "quantize": {
-    "unit": "bar",
-    "span": 1,
-    "phase": 0.0
+    "gridIndex": 10,
+    "phase": 0.25
   },
   "timeMs": 5167,
   "segmentEndMarkerId": "m_tail",
@@ -351,27 +350,37 @@ metadata via `quantize`.
 
 Supported quantize fields in `v1`:
 
-- `unit`: the timing unit this marker is intended to reference
-- `span`: the number of `unit` intervals covered by the quantize reference
-- `phase`: the normalized position within that span
+- `gridIndex`: the integer grid position counted from the start of the active
+  quantize timeline
+- `phase`: the normalized position within one quantize grid step
+
+If `quantize.phase` is omitted, readers should treat it as `0.0`.
+
+Quantize phase is defined in the half-open interval `0.0 <= phase < 1.0`.
+
+Quantize grid semantics:
+
+- `transport.quantizeUnit` defines what one quantize grid step means
+- `quantize.gridIndex = 0` refers to the first grid step in that unit space
+- `quantize.phase = 0.0` means exactly on the grid step
+- `quantize.phase = 0.5` means halfway through the grid step
 
 Supported quantize units in `v1`:
 
 - `beat`
 - `bar`
-
-If `quantize.phase` is omitted, readers should treat it as `0.0`.
-
-If `quantize.span` is omitted, readers should treat it as `1`.
-
-Quantize phase is defined in the half-open interval `0.0 <= phase < 1.0`.
+- `half-beat`
+- `quarter-beat`
+- `eighth-beat`
 
 Examples:
 
-- `{"unit": "bar", "span": 1, "phase": 0.0}`: start of a one-bar span
-- `{"unit": "bar", "span": 2, "phase": 0.5}`: midpoint of a two-bar span
-- `{"unit": "beat", "span": 4, "phase": 0.75}`: three-quarters through a
-  four-beat span
+- `{"gridIndex": 10, "phase": 0.0}` with `transport.quantizeUnit = "bar"`:
+  exactly on the eleventh bar boundary
+- `{"gridIndex": 10, "phase": 0.25}` with `transport.quantizeUnit = "beat"`:
+  the eleventh beat plus one quarter of a beat
+- `{"gridIndex": 40, "phase": 0.5}` with `transport.quantizeUnit =
+  "quarter-beat"`: halfway through the forty-first quarter-beat step
 
 Rules:
 
@@ -401,8 +410,8 @@ Playback role semantics:
 - markers with the `quantize` role do not implicitly start playback segments
 - markers with the `quantize` role do not implicitly terminate playback
   segments
-- `quantize.unit`, `quantize.span`, and `quantize.phase` define where the
-  marker sits within a quantize reference window
+- `quantize.gridIndex` and `quantize.phase` define where the marker sits within
+  the active quantize grid
 - `state` and `segmentEndMarkerId` are only meaningful for markers that include
   the `cue` role
 
@@ -463,6 +472,9 @@ Normative `v1` segment rules:
 - `marker`
 - `beat`
 - `bar`
+- `half-beat`
+- `quarter-beat`
+- `eighth-beat`
 
 Recommended `mode` values:
 
