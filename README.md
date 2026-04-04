@@ -67,6 +67,8 @@ The current focus is deliberately narrow:
   draft onward
 - [`examples/`](./examples/): implementation-oriented manifest examples for valid,
   warning, and invalid cases
+- [`scripts/validate_examples.py`](./scripts/validate_examples.py): lightweight
+  spec-aware validator for example manifests
 
 ## Implementing V1
 
@@ -98,6 +100,12 @@ Implementation notes:
   renderer setup; `source.hasAlpha` is descriptive source metadata.
 - Unknown optional fields within a supported major version should be ignored,
   not treated as hard errors.
+
+Validate the bundled examples with:
+
+```bash
+python3 scripts/validate_examples.py
+```
 
 ## Scope
 

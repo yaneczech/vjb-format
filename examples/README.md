@@ -18,3 +18,9 @@ Suggested use:
 
 These files are JSON manifests only. They are not complete `.vjb` bundles by
 themselves.
+
+Validate all examples from the repository root with:
+
+```bash
+python3 vjb-format/scripts/validate_examples.py
+```
