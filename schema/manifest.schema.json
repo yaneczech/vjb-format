@@ -393,6 +393,9 @@
     "quantize": {
       "type": "object",
       "additionalProperties": true,
+      "required": [
+        "gridIndex"
+      ],
       "properties": {
         "gridIndex": {
           "type": "integer",

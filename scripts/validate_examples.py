@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import re
 import sys
 from dataclasses import dataclass, field
@@ -303,6 +302,19 @@ def validate_markers(
         if marker.get("state") is not None and "cue" not in roles:
             result.warnings.append(f"marker `{marker_id}` has `state` without the `cue` role")
 
+    explicit_end_usage: dict[str, list[str]] = {}
+    for marker_id, marker in marker_by_id.items():
+        segment_end = marker.get("segmentEndMarkerId")
+        if isinstance(segment_end, str) and segment_end in marker_by_id:
+            explicit_end_usage.setdefault(segment_end, []).append(marker_id)
+
+    for end_marker_id, start_markers in explicit_end_usage.items():
+        if len(start_markers) > 1:
+            joined = ", ".join(sorted(start_markers))
+            result.errors.append(
+                f"explicit cue pairing is one-to-one; end marker `{end_marker_id}` is shared by multiple start markers: {joined}"
+            )
+
     if transport and transport.get("quantizeUnit") == "marker":
         quantize_markers = [marker_id for marker_id, roles in effective_roles.items() if "quantize" in roles]
         if not quantize_markers:
@@ -342,7 +354,9 @@ def validate_quantize(
     if "quantize" not in roles:
         result.warnings.append(f"`{label}.quantize` is present without the `quantize` role")
     grid_index = quantize.get("gridIndex")
-    if grid_index is not None and (not isinstance(grid_index, int) or isinstance(grid_index, bool) or grid_index < 0):
+    if grid_index is None:
+        result.errors.append(f"`{label}.quantize.gridIndex` is required when `quantize` is present")
+    elif not isinstance(grid_index, int) or isinstance(grid_index, bool) or grid_index < 0:
         result.errors.append(f"`{label}.quantize.gridIndex` must be an integer >= 0")
     phase = quantize.get("phase")
     if phase is not None and (not is_number(phase) or phase < 0 or phase >= 1):

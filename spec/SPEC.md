@@ -409,6 +409,11 @@ Playback role semantics:
 - when present, `segmentEndMarkerId` defines a bounded playback region whose
   start is the current cue marker and whose inclusive end is the referenced cue
   marker
+- explicit cue pairing is a one-to-one relationship in `v1`
+- a cue marker that declares `segmentEndMarkerId` must reference exactly one end
+  cue marker
+- a cue marker used as an explicit segment end should not be shared by multiple
+  start cue markers
 - cue pairing may be used for loop regions, clip in/out regions, or bounded
   trigger playback
 - markers with the `quantize` role may be used as timing references for
