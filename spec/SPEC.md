@@ -405,6 +405,12 @@ Playback role semantics:
 
 - only markers that include the `cue` role participate in implicit playback
   segment resolution
+- cue markers may form explicit playback pairs via `segmentEndMarkerId`
+- when present, `segmentEndMarkerId` defines a bounded playback region whose
+  start is the current cue marker and whose inclusive end is the referenced cue
+  marker
+- cue pairing may be used for loop regions, clip in/out regions, or bounded
+  trigger playback
 - markers with the `quantize` role may be used as timing references for
   snapping, sync, or quantized jumps
 - markers with the `quantize` role do not implicitly start playback segments
@@ -507,6 +513,12 @@ State resolution:
   `quantizeUnit`
 - `direction` of `0` is invalid for `v1`; direction must be either negative or
   positive
+- `speed` is an optional bundle-provided entry preference, not a required core
+  interoperability field
+- `easing` is an optional bundle-provided modulation hint, not a required core
+  interoperability field
+- playback applications may honor, ignore, or override `speed` and `easing`
+  according to runtime control policy
 
 Boundary behavior:
 
