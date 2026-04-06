@@ -192,13 +192,6 @@
       "properties": {
         "primaryVideo": {
           "$ref": "#/$defs/primaryVideo"
-        },
-        "proxies": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": true
-          }
         }
       }
     },
@@ -271,7 +264,6 @@
       "required": [
         "defaultMode",
         "defaultDirection",
-        "defaultSpeed",
         "seekMode"
       ],
       "properties": {

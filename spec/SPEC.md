@@ -30,6 +30,12 @@ Conforming `v1` reader behavior:
 - must ignore unknown optional fields within a supported major version
 - must use manifest timing fields as the authoritative playback timing source
 
+Role-dependent field constraints (such as `state` and `segmentEndMarkerId`
+being meaningful only for markers with the `cue` role, and `quantize` being
+meaningful only for markers with the `quantize` role) cannot be expressed in
+JSON Schema. Conforming validators must enforce these invariants in code-level
+validation logic.
+
 Conforming `v1` writer behavior:
 
 - must produce a `manifest.json` that satisfies the schema and hard validation
@@ -87,12 +93,10 @@ example.vjb
 
 Optional directories:
 
-- `proxy/`
 - `thumbnails/`
-- `analysis/`
 - `extras/`
 
-Reserved top-level paths:
+Reserved top-level paths (not normatively defined in `v1`):
 
 - `manifest.json`
 - `media/`
@@ -100,6 +104,12 @@ Reserved top-level paths:
 - `thumbnails/`
 - `analysis/`
 - `extras/`
+
+`proxy/` and `analysis/` are reserved path names in `v1` but are not
+normatively defined by this specification. Tooling may place proxy media or
+analysis data under these paths for internal purposes. Readers must not rely on
+their presence or structure for core playback. Future minor or major versions
+may define normative semantics for these paths.
 
 ## 7. Manifest
 
@@ -400,6 +410,8 @@ Rules:
   `quantize` role
 - unknown marker roles within a supported major version should be ignored unless
   explicitly supported by the implementation
+- readers must not rely on the order of markers in the array; readers must
+  derive frame order by sorting on `frame` themselves
 
 Playback role semantics:
 
@@ -479,13 +491,15 @@ Normative `v1` segment rules:
 
 `transport.quantizeUnit` values for `v1`:
 
-- `none`
-- `marker`
-- `beat`
-- `bar`
-- `half-beat`
-- `quarter-beat`
-- `eighth-beat`
+- `none`: no quantization; teleport triggers apply immediately
+- `marker`: snap to the nearest marker frame in frame order before triggering
+- `beat`: snap to the nearest beat boundary
+- `bar`: snap to the nearest bar boundary
+- `half-beat`: snap to the nearest half-beat boundary
+- `quarter-beat`: snap to the nearest quarter-beat boundary
+- `eighth-beat`: snap to the nearest eighth-beat boundary
+
+If `transport.quantizeUnit` is omitted, readers must treat it as `none`.
 
 Recommended `mode` values:
 
@@ -510,6 +524,7 @@ State resolution:
 - `transport` defines bundle-level default playback state
 - marker `state` defines the bundle-provided entry behavior for that marker
 - omitted marker `state` fields inherit from `transport`
+- if `transport.defaultSpeed` is omitted, readers must assume `1.0`
 - upon teleport or trigger to a marker, readers should adopt the marker's
   effective entry behavior unless explicitly overridden by the live controller
 - playback applications may apply runtime overrides after marker resolution
@@ -522,6 +537,12 @@ State resolution:
   interoperability field
 - `easing` is an optional bundle-provided modulation hint, not a required core
   interoperability field
+- `easing` describes how the entry state transition should be applied when a
+  marker is triggered or teleported to; it is not a frame-stepping law and does
+  not affect baked media content
+- specifically, `easing` is advisory guidance for how a runtime adopts the
+  effective entry state (such as speed or direction) after a teleport or
+  trigger, not how frames are decoded or stepped through
 - playback applications may honor, ignore, or override `speed` and `easing`
   according to runtime control policy
 
@@ -609,10 +630,19 @@ Minimum validator behavior:
 - unsupported optional features may produce warnings, but must not invalidate
   otherwise playable bundles
 
+Role-dependent constraint validation (not expressible in JSON Schema):
+
+- `state` and `segmentEndMarkerId` on a marker without the `cue` role should
+  produce a warning; validators may treat this as a hard error
+- `quantize` on a marker without the `quantize` role should produce a warning
+- `segmentEndMarkerId` must reference a marker that includes the `cue` role;
+  this is a hard error
+
 Soft warnings:
 
 - thumbnails missing
-- markers not pre-sorted by frame
+- markers not pre-sorted by frame in the array; readers must derive frame order
+  themselves and must not rely on array position
 - `timeMs` inconsistent with `frame`
 - optional analysis files missing
 
