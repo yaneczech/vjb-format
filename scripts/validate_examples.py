@@ -170,7 +170,7 @@ def validate_transport(result: ValidationResult, transport: Any) -> dict[str, An
     if not isinstance(transport, dict):
         result.errors.append("`transport` must be an object")
         return None
-    required = ("defaultMode", "defaultDirection", "defaultSpeed", "seekMode")
+    required = ("defaultMode", "defaultDirection", "seekMode")
     for key in required:
         if key not in transport:
             result.errors.append(f"`transport.{key}` is required")
@@ -183,8 +183,8 @@ def validate_transport(result: ValidationResult, transport: Any) -> dict[str, An
         result.errors.append("`transport.defaultDirection` must be a non-zero number between -1 and 1")
 
     speed = transport.get("defaultSpeed")
-    if not is_number(speed) or speed < 0:
-        result.errors.append("`transport.defaultSpeed` must be a number >= 0")
+    if speed is not None and (not is_number(speed) or speed < 0):
+        result.errors.append("`transport.defaultSpeed` must be a number >= 0 when present")
 
     if transport.get("seekMode") != "frame-accurate":
         result.errors.append("`transport.seekMode` must be `frame-accurate`")

@@ -90,7 +90,7 @@ Implementation notes:
 
 - VJB carries bundle defaults and marker entry intent, not immutable runtime
   behavior.
-- If marker `roles` is omitted, readers should treat the marker as a `cue`
+- If marker `roles` is omitted, readers must treat the marker as a `cue`
   marker for backward compatibility.
 - Markers with the `quantize` role may include `quantize.gridIndex` and
   `quantize.phase`; `transport.quantizeUnit` defines what one grid step means.
